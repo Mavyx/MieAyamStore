@@ -1,7 +1,9 @@
-<!DOCTYPE html><html lang="id">
+
+<!DOCTYPE html>
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mie ayam Store 😋</title>
   <style>
     body {
@@ -9,13 +11,30 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #1a1a1a;
       color: white;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light {
+      background-color: white;
+      color: black;
     }
     header {
       background-color: #800000;
       padding: 20px;
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
       font-size: 1.5em;
-      font-weight: bold;
+    }
+    .profile-button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
     }
     .section {
       padding: 20px;
@@ -65,11 +84,26 @@
       border-radius: 10px;
     }
     .profile {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       background-color: #2c2c2c;
-      padding: 15px;
+      padding: 20px;
       border-radius: 10px;
-      max-width: 500px;
-      margin: auto;
+      max-width: 90%;
+      width: 400px;
+      z-index: 999;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      margin: 10px auto;
     }
     footer {
       text-align: center;
@@ -78,7 +112,7 @@
       font-size: 0.9em;
       color: #aaa;
     }
-    .message {
+    .message, #loading {
       margin-top: 10px;
       padding: 10px;
       border-radius: 5px;
@@ -87,21 +121,35 @@
       display: none;
       text-align: center;
     }
+    .button-link button {
+      background-color: #25D366;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
   <header>
-    Mie ayam Store 😋
-  </header>  <div class="section">
+    <h1>Mie ayam Store 😋</h1>
+    <button class="profile-button" onclick="toggleProfile()">Profil Pelanggan</button>
+  </header>
+
+  <div class="section">
     <h2>Formulir Top Up</h2>
+    <p><small>Estimasi masuk: 1–5 menit setelah pembayaran.</small></p>
     <div class="game-card">
       <div class="form-group">
         <label>ID Pengguna</label>
-        <input type="text" placeholder="Masukkan ID Pengguna" />
+        <input type="text" id="input-id" placeholder="Masukkan ID Pengguna" />
       </div>
       <div class="form-group">
         <label>Server</label>
-        <input type="text" placeholder="Masukkan Server ID" />
+        <input type="text" id="input-server" placeholder="Masukkan Server ID" />
       </div>
       <div class="form-group">
         <label>Pilih Diamond</label>
@@ -125,42 +173,61 @@
           <option>OVO</option>
           <option>Gopay</option>
           <option>Transfer Bank</option>
-          <option>Mie Ayam</option>
+          <option>Mie ayam</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>Upload Bukti Pembayaran</label>
+        <input type="file" accept="image/*">
+      </div>
       <button onclick="handleTopUp()">Top Up Sekarang</button>
+      <div id="loading">Memproses...</div>
       <div class="message" id="message"></div>
+      <a class="button-link" href="https://wa.me/6282223346091?text=Halo%20saya%20mau%20topup" target="_blank">
+        <button>Chat Admin via WhatsApp</button>
+      </a>
+      <button onclick="document.body.classList.toggle('light')">Ganti Tema</button>
     </div>
-  </div>  <div class="section">
+  </div>
+
+  <div class="section">
     <h2>Testimoni Pelanggan</h2>
     <div class="gallery">
       <img src="https://i.postimg.cc/br2nVY4v/IMG-20250513-193129.png" alt="Testimoni 1">
       <img src="https://i.postimg.cc/sDX97yTb/IMG-20250513-191332.png" alt="Testimoni 2">
     </div>
-  </div>  <div class="section">
+  </div>
+
+  <div id="profile" class="profile">
     <h2>Profil Pelanggan</h2>
-    <div class="profile">
-      <div class="form-group">
-        <label>Nama</label>
-        <input type="text" placeholder="Nama Kamu" />
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" placeholder="Email Kamu" />
-      </div>
-      <div class="form-group">
-        <label>Nomor HP</label>
-        <input type="tel" placeholder="08xxxxxxxxxx" />
-      </div>
-      <button>Simpan Profil</button>
+    <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/100?text=Avatar" alt="Avatar">
+    <div class="form-group">
+      <label>Foto Profil</label>
+      <input type="file" accept="image/*" onchange="previewAvatar(event)">
     </div>
-  </div>  <footer>
+    <div class="form-group">
+      <label>Nama</label>
+      <input type="text" placeholder="Nama Kamu" />
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" placeholder="Email Kamu" />
+    </div>
+    <div class="form-group">
+      <label>Nomor HP</label>
+      <input type="tel" placeholder="08xxxxxxxxxx" />
+    </div>
+    <button onclick="toggleProfile()">Tutup Profil</button>
+  </div>
+
+  <footer>
     Hubungi Owner: <br>
     Email: <span id="email">mavicihuy@gmail.com</span><br>
     Telepon: <span id="telepon">0822-2334-6091</span>
-  </footer>  <script>
-    let selectedDiamond = null;
+  </footer>
 
+  <script>
+    let selectedDiamond = null;
     document.querySelectorAll('.diamond-option').forEach(option => {
       option.addEventListener('click', () => {
         document.querySelectorAll('.diamond-option').forEach(opt => opt.classList.remove('selected'));
@@ -169,14 +236,42 @@
       });
     });
 
+    function toggleProfile() {
+      const profile = document.getElementById('profile');
+      profile.style.display = profile.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function previewAvatar(event) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        document.getElementById('avatarPreview').src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
     function handleTopUp() {
       const msg = document.getElementById('message');
-      if (selectedDiamond) {
-        msg.textContent = `Diamond ${selectedDiamond} telah dikirim ke akun Anda.`;
-      } else {
-        msg.textContent = "Pilih diamond sebelum bertransaksi.";
-      }
-      msg.style.display = 'block';
+      const loading = document.getElementById('loading');
+      const id = document.getElementById('input-id').value;
+      const server = document.getElementById('input-server').value;
+
+      msg.style.display = 'none';
+      loading.style.display = 'block';
+
+      setTimeout(() => {
+        loading.style.display = 'none';
+        if (!id || !server || !selectedDiamond) {
+          msg.textContent = "Lengkapi data sebelum transaksi.";
+        } else {
+          if (confirm(`Yakin ingin top up ${selectedDiamond} ke ID ${id} (Server ${server})?`)) {
+            msg.textContent = `Diamond ${selectedDiamond} telah dikirim ke akun Anda.`;
+          } else {
+            msg.textContent = "Transaksi dibatalkan.";
+          }
+        }
+        msg.style.display = 'block';
+      }, 1000);
     }
-  </script></body>
+  </script>
+</body>
 </html>
